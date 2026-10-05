@@ -1,0 +1,5 @@
+﻿data/
+legacy/data/
+*.har
+*.zip
+node_modules/

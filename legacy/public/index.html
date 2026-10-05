@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Săn Vé Rẻ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈</text></svg>">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f3f3f1; --surface: #fcfcfb; --surface-2: #f0efec; --line: #e4e3df; --grid: #ecebe7;
+    --text: #0b0b0b; --text-2: #52514e; --muted: #7c7b76;
+    --accent: #2a78d6; --accent-soft: #e6effb;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+    --other: #8a8984;
+    --good: #0f7b3e; --good-bg: #e3f4ea; --bad: #b42318; --bad-bg: #fdecea;
+    --seq-0: #cde2fb; --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #121211; --surface: #1a1a19; --surface-2: #242422; --line: #2e2e2b; --grid: #262624;
+      --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86;
+      --accent: #3987e5; --accent-soft: #1b2b42;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+      --other: #77766f;
+      --good: #4ade80; --good-bg: #15301f; --bad: #f87171; --bad-bg: #3a1716;
+      --seq-0: #104281; --seq-1: #184f95; --seq-2: #256abf; --seq-3: #3987e5; --seq-4: #6da7ec; --seq-5: #9ec5f4;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #121211; --surface: #1a1a19; --surface-2: #242422; --line: #2e2e2b; --grid: #262624;
+    --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86;
+    --accent: #3987e5; --accent-soft: #1b2b42;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --other: #77766f;
+    --good: #4ade80; --good-bg: #15301f; --bad: #f87171; --bad-bg: #3a1716;
+    --seq-0: #104281; --seq-1: #184f95; --seq-2: #256abf; --seq-3: #3987e5; --seq-4: #6da7ec; --seq-5: #9ec5f4;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--page); color: var(--text); font: 14px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .num { font-variant-numeric: tabular-nums; }
+  button, select, input { font: inherit; color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px 48px; }
+
+  /* Top bar */
+  .top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 86%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; gap: 14px; padding-top: 12px; padding-bottom: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -.2px; }
+  .logo { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 17px; }
+  .live { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text-2); font-size: 12px; white-space: nowrap; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .live.on i { background: var(--good); box-shadow: 0 0 0 3px var(--good-bg); }
+  .live.scan i { background: var(--accent); animation: pulse 1.1s ease-in-out infinite; }
+  .live.off i { background: var(--bad); }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 5px var(--accent-soft); } }
+  .grow { flex: 1; }
+  .ibtn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; height: 34px; padding: 0 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 13px; }
+  .ibtn:hover { color: var(--text); border-color: var(--accent); }
+  .upd { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .progress { height: 3px; background: transparent; }
+  .progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+
+  section { margin-top: 22px; }
+  h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: -.1px; }
+  h2 small { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+
+  /* KPI */
+  .kpis { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .hero { grid-column: 1 / -1; } }
+  .kpi { padding: 16px 18px; }
+  .kpi .lb { color: var(--text-2); font-size: 12px; }
+  .kpi .v { font-size: 26px; font-weight: 700; letter-spacing: -.6px; margin-top: 2px; }
+  .kpi .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .hero { position: relative; overflow: hidden; cursor: pointer; }
+  .hero .v { font-size: 40px; letter-spacing: -1.2px; line-height: 1.15; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; color: var(--text-2); margin-top: 6px; }
+  .hero::after { content: "✈"; position: absolute; right: -6px; bottom: -28px; font-size: 130px; color: var(--accent); opacity: .07; transform: rotate(-12deg); }
+
+  /* Airline chip */
+  .al { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px; color: var(--text); white-space: nowrap; }
+  .al::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .pill.down { color: var(--good); background: var(--good-bg); }
+  .pill.up { color: var(--bad); background: var(--bad-bg); }
+  .pill.flat { color: var(--text-2); background: var(--surface-2); }
+
+  /* Route cards */
+  .routes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .rc { padding: 14px 16px; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .rc:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .rc.best { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset, var(--shadow); }
+  .rc .hd { display: flex; align-items: center; gap: 8px; }
+  .rc .sw { width: 12px; height: 3px; border-radius: 2px; background: var(--c); }
+  .rc .code { font-weight: 700; font-size: 15px; }
+  .rc .tag { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; }
+  .rc .nm { color: var(--muted); font-size: 12px; }
+  .rc .pr { font-size: 24px; font-weight: 700; letter-spacing: -.5px; margin: 8px 0 2px; }
+  .rc .fl { color: var(--text-2); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+  .rc .ft { display: flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--muted); font-size: 12px; flex-wrap: wrap; }
+
+  /* Chart */
+  .chartcard { padding: 14px 16px 10px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 6px; }
+  .legend button { border: 0; background: none; padding: 2px 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; }
+  .legend button i { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
+  .legend button.off { opacity: .4; }
+  #chart { position: relative; }
+  #chart svg { display: block; width: 100%; overflow: visible; }
+  .axis text { fill: var(--muted); font-size: 11px; }
+  .gridl { stroke: var(--grid); }
+  .tip { position: fixed; z-index: 50; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 10px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.14); min-width: 160px; opacity: 0; transition: opacity .1s; }
+  .tip.show { opacity: 1; }
+  .tip .t { font-weight: 700; margin-bottom: 4px; }
+  .tip .r { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .tip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
+  .tip .r i { width: 10px; height: 3px; border-radius: 2px; background: var(--c); }
+  .tip .r b { font-weight: 600; }
+
+  /* Heatmap */
+  .heat { overflow: auto; }
+  .heat table { border-collapse: separate; border-spacing: 2px; width: 100%; padding: 8px; }
+  .heat th { font-weight: 500; font-size: 12px; color: var(--text-2); padding: 6px; white-space: nowrap; }
+  .heat th.we { color: var(--text); font-weight: 700; }
+  .heat th.rh { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+  .heat th.rh b { color: var(--text); }
+  .heat th.rh small { display: block; color: var(--muted); font-weight: 400; }
+  .hc { width: 100%; min-width: 74px; height: 54px; border: 0; border-radius: 8px; cursor: pointer; display: grid; place-content: center;
+    background: var(--bgc, var(--surface-2)); color: var(--fg, var(--text-2)); position: relative; line-height: 1.2; }
+  .hc b { font-size: 14px; }
+  .hc small { font-size: 10.5px; opacity: .9; }
+  .hc.best { outline: 2px solid var(--text); outline-offset: 1px; }
+  .hc.best::after { content: "★"; position: absolute; top: 3px; right: 6px; font-size: 11px; }
+  .hc.sel { box-shadow: 0 0 0 3px var(--accent); }
+  .hc.pending { background: repeating-linear-gradient(135deg, var(--surface-2) 0 6px, transparent 6px 12px); }
+  .scale { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; padding: 0 12px 12px; flex-wrap: wrap; }
+  .scale .bar { display: flex; gap: 2px; }
+  .scale .bar i { width: 22px; height: 8px; border-radius: 2px; }
+
+  /* Explorer */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .filters select { height: 32px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 0 8px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: var(--surface); padding: 0 10px; height: 30px; cursor: pointer; color: var(--text-2); font-size: 12.5px; border-right: 1px solid var(--line); }
+  .seg button:last-child { border-right: 0; }
+  .seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px 3px 8px; cursor: pointer; }
+  .chips button.off { opacity: .45; }
+  .sep { width: 1px; height: 22px; background: var(--line); }
+  .tbl { overflow: auto; }
+  table.fl { border-collapse: collapse; width: 100%; }
+  table.fl th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none; }
+  table.fl th.r, table.fl td.r { text-align: right; }
+  table.fl th.on { color: var(--text); }
+  table.fl td { padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.fl tr:hover td { background: var(--surface-2); }
+  table.fl td.p { font-weight: 700; }
+  table.fl del { color: var(--muted); font-weight: 400; font-size: 12px; margin-right: 6px; }
+  .badge { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
+  .more { display: block; margin: 0 auto; padding: 12px; border: 0; background: none; color: var(--accent); cursor: pointer; font-weight: 600; }
+  .muted { color: var(--muted); }
+
+  .empty { text-align: center; padding: 70px 20px; }
+  .empty .big { font-size: 56px; }
+  .empty h1 { font-size: 22px; margin: 10px 0 6px; }
+  .empty p { color: var(--text-2); max-width: 560px; margin: 6px auto; }
+  .empty code { background: var(--surface-2); padding: 2px 6px; border-radius: 6px; font-size: 13px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 760px; margin: 24px auto 0; text-align: left; }
+  .steps .card { padding: 14px; }
+  .steps b { display: block; margin-bottom: 4px; }
+  .drop { position: fixed; inset: 0; z-index: 60; background: color-mix(in srgb, var(--accent) 18%, transparent); border: 3px dashed var(--accent);
+    display: none; place-items: center; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .drop.show { display: grid; }
+  .err { color: var(--bad); }
+  .kpis > *, .routes > *, .filters > * { min-width: 0; }
+  .brand { white-space: nowrap; }
+  @media (max-width: 640px) {
+    .top .wrap { gap: 8px; }
+    .upd, .ibtn .tx { display: none; }
+    .ibtn { padding: 0 9px; }
+    .live { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+    .hero .v { font-size: 32px; }
+    .filters select { flex: 1 1 140px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><div class="logo">✈</div>Săn Vé Rẻ</div>
+    <span class="live" id="live"><i></i><span>Đang kết nối…</span></span>
+    <span class="grow"></span>
+    <span class="upd num" id="upd"></span>
+    <button class="ibtn" id="btnImport" title="Mở file JSON đã xuất">📂<span class="tx"> Nhập</span></button>
+    <button class="ibtn" id="btnExport" title="Tải dữ liệu JSON">⬇<span class="tx"> JSON</span></button>
+    <button class="ibtn" id="btnTheme" title="Đổi giao diện sáng/tối">◐</button>
+    <input type="file" id="file" accept="application/json,.json" hidden>
+  </div>
+  <div class="progress"><i id="prog"></i></div>
+</header>
+
+<main class="wrap" id="app"></main>
+<div class="tip" id="tip"></div>
+<div class="drop" id="drop">Thả file JSON vào đây</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ───── helpers ─────
+  const $ = s => document.querySelector(s);
+  const pad = n => String(n).padStart(2, '0');
+  const parseIso = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const WD = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const WD_FULL = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+  const dm = s => { const d = parseIso(s); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
+  const wd = s => WD[parseIso(s).getDay()];
+  const isWeekend = s => parseIso(s).getDay() % 6 === 0;
+  const money = n => Math.round(n).toLocaleString('vi-VN') + '₫';
+  const short = n => n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '').replace('.', ',') + 'tr' : Math.round(n / 1000) + 'K';
+  const hhmm = s => String(s).slice(11, 16);
+  const dur = m => `${Math.floor(m / 60)}h${pad(m % 60)}`;
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ago = ts => { const s = Math.round((Date.now() - ts) / 1000); return s < 10 ? 'vừa xong' : s < 60 ? `${s} giây trước` : s < 3600 ? `${Math.round(s / 60)} phút trước` : new Date(ts).toLocaleString('vi-VN'); };
+
+  // Màu theo thực thể (cố định thứ tự, không đổi khi lọc)
+  const AIRLINE_ORDER = ['VN', 'VJ', 'QH', 'VU', '9G', 'BL'];
+  const AIRLINE_NAME = { VN: 'Vietnam Airlines', VJ: 'Vietjet Air', QH: 'Bamboo Airways', VU: 'Vietravel Airlines', '9G': 'Sun PhuQuoc Airways', BL: 'Pacific Airlines' };
+  const alColor = a => { const i = AIRLINE_ORDER.indexOf(a); return i >= 0 ? `var(--s${i + 1})` : 'var(--other)'; };
+  const routeColor = i => i < 8 ? `var(--s${i + 1})` : 'var(--other)';
+  const chip = (a, name) => `<span class="al" style="--c:${alColor(a)}" title="${esc(name || AIRLINE_NAME[a] || a)}">${esc(a)}</span>`;
+  const bucketOf = f => { const h = Number(hhmm(f.dep).slice(0, 2)); return h < 12 ? 'sang' : h < 18 ? 'chieu' : 'toi'; };
+
+  // ───── state ─────
+  let snap = null, hist = {};
+  const ui = {
+    route: 'all', date: 'all', direct: false, bucket: 'all', sort: 'price', limit: 50,
+    airlinesOff: new Set(), routesOff: new Set(), selected: null,
+  };
+  try { Object.assign(ui, JSON.parse(localStorage.getItem('svr-ui') || '{}'), { airlinesOff: new Set(), routesOff: new Set(), selected: null, limit: 50 }); } catch {}
+  const saveUi = () => { try { localStorage.setItem('svr-ui', JSON.stringify({ direct: ui.direct, bucket: ui.bucket, sort: ui.sort })); } catch {} };
+
+  // ───── theme ─────
+  const applyTheme = t => { if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
+  try { applyTheme(localStorage.getItem('svr-theme')); } catch {}
+  $('#btnTheme').onclick = () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    const t = dark ? 'light' : 'dark';
+    applyTheme(t);
+    try { localStorage.setItem('svr-theme', t); } catch {}
+    render();
+  };
+
+  // ───── data source: SSE từ server.js, hoặc nhập file ─────
+  const live = (cls, text) => { const el = $('#live'); el.className = 'live ' + cls; el.lastElementChild.textContent = text; };
+  function setData(p) {
+    snap = p.snapshot || null;
+    hist = p.history || {};
+    render();
+  }
+  if (location.protocol.startsWith('http') && new URLSearchParams(location.search).has('once')) {
+    // ?once: tải một lần, không giữ kết nối (dùng để chụp/in)
+    fetch('/api/state').then(r => r.json()).then(setData).then(() => live('on', 'Ảnh chụp tĩnh'));
+  } else if (location.protocol.startsWith('http')) {
+    const connect = () => {
+      const es = new EventSource('/api/events');
+      es.onmessage = e => { try { setData(JSON.parse(e.data)); } catch {} };
+      es.onerror = () => { live('off', 'Mất kết nối server'); };
+      es.onopen = () => {};
+    };
+    connect();
+  } else {
+    live('', 'Chế độ file');
+    render();
+  }
+
+  function loadFile(file) {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const j = JSON.parse(r.result);
+        setData(j.snapshot ? j : { snapshot: j, history: {} });
+      } catch { alert('File JSON không hợp lệ'); }
+    };
+    r.readAsText(file);
+  }
+  $('#btnImport').onclick = () => $('#file').click();
+  $('#file').onchange = e => e.target.files[0] && loadFile(e.target.files[0]);
+  $('#btnExport').onclick = () => {
+    if (!snap) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ snapshot: snap, history: hist })], { type: 'application/json' }));
+    a.download = `san-ve-re_${snap.dates[0] || 'data'}.json`;
+    a.click();
+  };
+  let dragN = 0;
+  addEventListener('dragenter', e => { e.preventDefault(); dragN++; $('#drop').classList.add('show'); });
+  addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#drop').classList.remove('show'); } });
+  addEventListener('dragover', e => e.preventDefault());
+  addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').classList.remove('show'); const f = e.dataTransfer.files[0]; f && loadFile(f); });
+
+  // ───── derive ─────
+  function derive() {
+    const routes = snap.routes.map((r, i) => ({ ...r, color: routeColor(i), idx: i }));
+    const filt = f => !ui.direct || f.stops === 0;
+    const cell = (rk, d) => snap.cells[`${rk}|${d}`] || { status: 'idle', flights: [] };
+    const stats = routes.map(r => {
+      const days = snap.dates.map(d => {
+        const c = cell(r.key, d);
+        const fl = (c.flights || []).filter(filt);
+        return { d, c, fl, min: fl.length ? fl[0].price : null, best: fl[0] || null };
+      });
+      const ok = days.filter(x => x.min != null);
+      const lo = ok.length ? Math.min(...ok.map(x => x.min)) : null;
+      const hi = ok.length ? Math.max(...ok.map(x => x.min)) : null;
+      const best = ok.slice().sort((a, b) => a.min - b.min)[0] || null;
+      // So với lần quét trước của chính ngày rẻ nhất
+      let delta = null;
+      if (best) {
+        const h = (hist[`${r.key}|${best.d}`] || []).filter(x => x.scan !== snap.scanId);
+        if (h.length) delta = best.min - h[h.length - 1].min;
+      }
+      return { r, days, lo, hi, best, delta };
+    });
+    const overall = stats.filter(s => s.best).sort((a, b) => a.best.min - b.best.min)[0] || null;
+    let total = 0;
+    for (const c of Object.values(snap.cells)) total += (c.flights || []).length;
+    const spread = stats.filter(s => s.best && s.hi > s.lo).sort((a, b) => (b.hi - b.lo) - (a.hi - a.lo))[0] || null;
+    return { routes, stats, overall, total, spread, filt };
+  }
+
+  // ───── render ─────
+  function render() {
+    renderTop();
+    const app = $('#app');
+    if (!snap || !snap.routes?.length) { app.innerHTML = emptyView(); return; }
+    const D = derive();
+    app.innerHTML = `
+      <section>${kpiView(D)}</section>
+      <section><h2>Rẻ nhất tuần theo chặng <small>bấm để xem chi tiết</small></h2><div class="routes">${D.stats.map(s => routeCard(s, D)).join('')}</div></section>
+      <section><h2>Giá rẻ nhất mỗi ngày <small>giá/${snap.settings?.pax || 1} khách, đã gồm thuế phí</small></h2>
+        <div class="card chartcard"><div class="legend" id="legend"></div><div id="chart"></div></div></section>
+      <section><h2>Bản đồ giá <small>chặng × ngày</small></h2><div class="card heat" id="heat"></div></section>
+      <section><h2>Tra cứu chuyến bay</h2><div class="card" id="explorer"></div></section>`;
+    drawLegend(D);
+    drawChart(D);
+    drawHeat(D);
+    drawExplorer(D);
+    bindCards();
+  }
+
+  function renderTop() {
+    const p = snap?.progress;
+    if (snap) {
+      if (p?.running) live('scan', `Đang quét ${p.done}/${p.total}`);
+      else live('on', p?.message ? `Dừng: ${p.message}` : 'Trực tiếp');
+      $('#upd').textContent = 'Cập nhật ' + ago(snap.updatedAt);
+      $('#prog').style.width = p?.running && p.total ? (p.done / p.total * 100) + '%' : '0';
+    } else if (location.protocol.startsWith('http')) {
+      live('on', 'Chờ dữ liệu');
+    }
+  }
+  setInterval(() => snap && ($('#upd').textContent = 'Cập nhật ' + ago(snap.updatedAt)), 15000);
+
+  function emptyView() {
+    return `<div class="empty">
+      <div class="big">✈</div>
+      <h1>Chưa có dữ liệu giá vé</h1>
+      <p>Dashboard sẽ tự cập nhật ngay khi bạn bắt đầu quét trên airbookingonline.com.</p>
+      <div class="steps">
+        <div class="card"><b>1. Chạy server</b><span class="muted">Mở terminal trong thư mục <code>san-ve-re</code>, chạy <code>node server.js</code></span></div>
+        <div class="card"><b>2. Mở userscript</b><span class="muted">Trên airbookingonline.com (đã đăng nhập), bấm <b>✈ Săn vé rẻ</b> và bật <b>Đồng bộ dashboard</b></span></div>
+        <div class="card"><b>3. Quét giá</b><span class="muted">Bấm <b>🔍 Quét giá</b>. Kết quả hiện ở đây theo thời gian thực</span></div>
+      </div>
+      <p style="margin-top:20px" class="muted">Hoặc kéo-thả file JSON đã xuất vào trang này.</p>
+    </div>`;
+  }
+
+  function kpiView(D) {
+    const o = D.overall;
+    const days = snap.dates.length;
+    const range = days ? `${dm(snap.dates[0])} – ${dm(snap.dates[days - 1])}` : '';
+    return `<div class="kpis">
+      <div class="card kpi hero" data-open="${o ? `${o.r.key}|${o.best.d}` : ''}">
+        <div class="lb">Vé rẻ nhất trong ${days} ngày</div>
+        ${o ? `<div class="v num">${money(o.best.min)}</div>
+          <div class="meta"><b>${o.r.from} → ${o.r.to}</b><span>${WD_FULL[parseIso(o.best.d).getDay()]}, ${dm(o.best.d)}</span>
+          ${chip(o.best.best.airline, o.best.best.airlineName)}<span class="num">${esc(o.best.best.no)} · ${hhmm(o.best.best.dep)} → ${hhmm(o.best.best.arr)}</span></div>`
+        : `<div class="v muted">${snap.progress?.running ? 'Đang quét…' : '—'}</div>`}
+      </div>
+      <div class="card kpi"><div class="lb">Chặng đang theo dõi</div><div class="v num">${D.routes.length}</div><div class="sub num">${range}</div></div>
+      <div class="card kpi"><div class="lb">Chuyến bay đã quét</div><div class="v num">${D.total.toLocaleString('vi-VN')}</div><div class="sub num">${D.routes.length * days} lượt tìm</div></div>
+      <div class="card kpi"><div class="lb">Chọn đúng ngày tiết kiệm</div>
+        ${D.spread ? `<div class="v num">${short(D.spread.hi - D.spread.lo)}</div><div class="sub">${D.spread.r.from} → ${D.spread.r.to}: rẻ nhất so với đắt nhất</div>` : '<div class="v muted">—</div>'}
+      </div>
+    </div>`;
+  }
+
+  function routeCard(s, D) {
+    const b = s.best, f = b?.best;
+    const isBest = D.overall === s && D.stats.length > 1;
+    let deltaHtml = '';
+    if (s.delta != null) {
+      deltaHtml = s.delta < 0 ? `<span class="pill down">▼ ${short(-s.delta)} so với lần trước</span>`
+        : s.delta > 0 ? `<span class="pill up">▲ ${short(s.delta)} so với lần trước</span>`
+        : `<span class="pill flat">= không đổi</span>`;
+    }
+    const pending = s.days.filter(x => x.c.status === 'running' || x.c.status === 'queued').length;
+    return `<div class="card rc ${isBest ? 'best' : ''}" style="--c:${s.r.color}" data-open="${b ? `${s.r.key}|${b.d}` : ''}">
+      <div class="hd"><span class="sw"></span><span class="code">${s.r.from} → ${s.r.to}</span>${isBest ? '<span class="tag">RẺ NHẤT</span>' : ''}</div>
+      <div class="nm">${esc(s.r.fromName)} → ${esc(s.r.toName)}</div>
+      ${f ? `<div class="pr num">${money(b.min)}</div>
+        <div class="fl">${chip(f.airline, f.airlineName)}<b class="num">${esc(f.no)}</b><span class="num">${wd(b.d)} ${dm(b.d)} · ${hhmm(f.dep)} → ${hhmm(f.arr)}</span></div>
+        <div class="ft">${deltaHtml}${s.hi > s.lo ? `<span class="num">Đắt nhất ${short(s.hi)}</span>` : ''}${pending ? `<span>· còn ${pending} ngày đang quét</span>` : ''}</div>`
+      : `<div class="pr muted">${pending ? 'Đang quét…' : 'Không có chuyến'}</div>`}
+    </div>`;
+  }
+
+  function bindCards() {
+    document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => {
+      const v = el.dataset.open;
+      if (!v) return;
+      const [rk, d] = v.split('|');
+      openCell(rk, d);
+    }));
+  }
+  function openCell(rk, d) {
+    ui.route = rk; ui.date = d; ui.selected = `${rk}|${d}`; ui.limit = 50;
+    render();
+    $('#explorer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ───── legend + line chart ─────
+  function drawLegend(D) {
+    const el = $('#legend');
+    if (D.routes.length < 2) { el.style.display = 'none'; return; }
+    el.innerHTML = D.routes.map(r => `<button class="${ui.routesOff.has(r.key) ? 'off' : ''}" style="--c:${r.color}" data-rk="${r.key}" aria-pressed="${!ui.routesOff.has(r.key)}"><i></i>${r.from} → ${r.to}</button>`).join('');
+    el.querySelectorAll('button').forEach(b => b.onclick = () => {
+      const k = b.dataset.rk;
+      ui.routesOff.has(k) ? ui.routesOff.delete(k) : ui.routesOff.add(k);
+      render();
+    });
+  }
+
+  function niceTicks(lo, hi, n = 4) {
+    if (lo === hi) { lo *= .9; hi *= 1.1; }
+    const raw = (hi - lo) / n, mag = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+    const t0 = Math.floor(lo / step) * step, out = [];
+    for (let v = t0; v <= hi + step * .5; v += step) out.push(v);
+    return out;
+  }
+
+  function drawChart(D) {
+    const host = $('#chart');
+    const series = D.stats.filter(s => !ui.routesOff.has(s.r.key));
+    const vals = series.flatMap(s => s.days.map(x => x.min).filter(v => v != null));
+    if (!vals.length) { host.innerHTML = `<div class="muted" style="padding:40px;text-align:center">${snap.progress?.running ? 'Đang chờ kết quả đầu tiên…' : 'Chưa có dữ liệu'}</div>`; return; }
+    const W = host.clientWidth || 800, H = 280;
+    const labelW = series.length <= 4 ? 92 : 16;
+    const m = { t: 12, r: labelW, b: 34, l: 52 };
+    const ticks = niceTicks(Math.min(...vals), Math.max(...vals));
+    const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+    const n = snap.dates.length;
+    const x = i => m.l + (n === 1 ? (W - m.l - m.r) / 2 : i * (W - m.l - m.r) / (n - 1));
+    const y = v => m.t + (1 - (v - y0) / (y1 - y0)) * (H - m.t - m.b);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Giá rẻ nhất mỗi ngày theo chặng">`;
+    svg += '<g class="axis">';
+    for (const t of ticks) svg += `<line class="gridl" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 8}" y="${y(t) + 4}" text-anchor="end">${short(t)}</text>`;
+    snap.dates.forEach((d, i) => {
+      if (n > 14 && i % 2) return;
+      svg += `<text x="${x(i)}" y="${H - 16}" text-anchor="middle" ${isWeekend(d) ? 'font-weight="700" style="fill:var(--text-2)"' : ''}>${wd(d)}</text><text x="${x(i)}" y="${H - 3}" text-anchor="middle">${dm(d)}</text>`;
+    });
+    svg += '</g><line id="xh" y1="' + m.t + '" y2="' + (H - m.b) + '" stroke="var(--muted)" stroke-dasharray="3 3" opacity="0"/>';
+    const labels = [];
+    for (const s of series) {
+      const pts = s.days.map((x0, i) => x0.min != null ? [x(i), y(x0.min)] : null);
+      // Đường nét liền giữa các điểm có dữ liệu liên tiếp
+      let dPath = '', pen = false;
+      pts.forEach(p => { if (p) { dPath += (pen ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); pen = true; } else pen = false; });
+      svg += `<path d="${dPath}" fill="none" stroke="${s.r.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      pts.forEach((p, i) => {
+        if (!p) return;
+        const isMin = s.best && s.days[i] === s.best;
+        svg += `<circle cx="${p[0]}" cy="${p[1]}" r="${isMin ? 5.5 : 4}" fill="${isMin ? s.r.color : 'var(--surface)'}" stroke="${isMin ? 'var(--surface)' : s.r.color}" stroke-width="2"/>`;
+      });
+      if (series.length <= 4) {
+        const lastI = pts.map((p, i) => p ? i : -1).filter(i => i >= 0).pop();
+        if (lastI != null) labels.push({ y: pts[lastI][1], x: pts[lastI][0], text: `${s.r.from}→${s.r.to}` });
+      }
+      if (s.best) {
+        const i = s.days.indexOf(s.best);
+        svg += `<text x="${x(i)}" y="${y(s.best.min) - 10}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">${short(s.best.min)}</text>`;
+      }
+    }
+    // Nhãn trực tiếp ở cuối đường — tránh chồng nhau
+    labels.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
+    for (const l of labels) svg += `<text x="${W - m.r + 10}" y="${l.y + 4}" font-size="11.5" font-weight="600" fill="var(--text-2)">${l.text}</text>`;
+    svg += `<rect id="hit" x="${m.l - 10}" y="0" width="${W - m.l - m.r + 20}" height="${H - m.b}" fill="transparent" style="cursor:crosshair"/></svg>`;
+    host.innerHTML = svg;
+
+    const hit = host.querySelector('#hit'), xh = host.querySelector('#xh'), svgEl = host.querySelector('svg');
+    const idxAt = ev => {
+      const r = svgEl.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
+      return n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round((px - m.l) / ((W - m.l - m.r) / (n - 1)))));
+    };
+    hit.addEventListener('mousemove', ev => {
+      const i = idxAt(ev), d = snap.dates[i];
+      xh.setAttribute('x1', x(i)); xh.setAttribute('x2', x(i)); xh.setAttribute('opacity', 1);
+      const rows = series.map(s => ({ s, v: s.days[i].min, f: s.days[i].best })).sort((a, b) => (a.v ?? 1e15) - (b.v ?? 1e15));
+      showTip(ev, `<div class="t">${WD_FULL[parseIso(d).getDay()]}, ${dm(d)}</div>` + rows.map(o =>
+        `<div class="r"><span><i style="--c:${o.s.r.color}"></i>${o.s.r.from}→${o.s.r.to}${o.f ? ` · ${esc(o.f.airline)} ${hhmm(o.f.dep)}` : ''}</span><b class="num">${o.v != null ? money(o.v) : '—'}</b></div>`).join('')
+        + '<div class="muted" style="margin-top:4px">Bấm để xem chuyến</div>');
+    });
+    hit.addEventListener('mouseleave', () => { xh.setAttribute('opacity', 0); hideTip(); });
+    hit.addEventListener('click', ev => {
+      const d = snap.dates[idxAt(ev)];
+      ui.date = d; ui.selected = null; ui.limit = 50;
+      hideTip(); render();
+      $('#explorer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  const tip = $('#tip');
+  function showTip(ev, html) {
+    tip.innerHTML = html; tip.classList.add('show');
+    const r = tip.getBoundingClientRect();
+    let left = ev.clientX + 14, top = ev.clientY + 14;
+    if (left + r.width > innerWidth - 8) left = ev.clientX - r.width - 14;
+    if (top + r.height > innerHeight - 8) top = ev.clientY - r.height - 14;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function hideTip() { tip.classList.remove('show'); }
+
+  // ───── heatmap ─────
+  function drawHeat(D) {
+    const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
+    const head = `<tr><th class="rh"></th>${snap.dates.map(d => `<th class="${isWeekend(d) ? 'we' : ''}">${wd(d)}<br><span class="num">${dm(d)}</span></th>`).join('')}</tr>`;
+    const rows = D.stats.map(s => `<tr><th class="rh"><b>${s.r.from} → ${s.r.to}</b><small>${esc(s.r.fromName)} – ${esc(s.r.toName)}</small></th>${s.days.map(x => {
+      const key = `${s.r.key}|${x.d}`;
+      const sel = ui.selected === key ? ' sel' : '';
+      if (x.min == null) {
+        const st = x.c.status;
+        const txt = st === 'running' ? '…' : st === 'queued' ? '' : st === 'error' ? '⚠' : '—';
+        return `<td><button class="hc${st === 'running' || st === 'queued' ? ' pending' : ''}${sel}" data-k="${key}" data-tip="${esc(st === 'error' ? 'Lỗi: ' + (x.c.err || '') : st === 'done' ? 'Không có chuyến' : 'Đang quét')}">${txt}</button></td>`;
+      }
+      const t = s.hi > s.lo ? (x.min - s.lo) / (s.hi - s.lo) : 0;
+      const step = Math.round(t * 5);
+      const fg = dark ? (step >= 3 ? '#0b0b0b' : '#ffffff') : (step >= 3 ? '#ffffff' : '#0b0b0b');
+      const isBest = x === s.best && s.days.filter(y => y.min != null).length > 1;
+      return `<td><button class="hc${isBest ? ' best' : ''}${sel}" style="--bgc:var(--seq-${step});--fg:${fg}" data-k="${key}">
+        <b class="num">${short(x.min)}</b><small>${esc(x.best.airline)} · ${hhmm(x.best.dep)}</small></button></td>`;
+    }).join('')}</tr>`).join('');
+    $('#heat').innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>
+      <div class="scale"><span>Rẻ</span><span class="bar">${[0, 1, 2, 3, 4, 5].map(i => `<i style="background:var(--seq-${i})"></i>`).join('')}</span><span>Đắt</span>
+      <span>· so sánh trong cùng một chặng · ★ ngày rẻ nhất · bấm ô để xem tất cả chuyến</span></div>`;
+    $('#heat').querySelectorAll('.hc').forEach(b => {
+      const [rk, d] = b.dataset.k.split('|');
+      b.onclick = () => openCell(rk, d);
+      b.onmousemove = ev => {
+        const s = D.stats.find(z => z.r.key === rk), x0 = s.days.find(z => z.d === d);
+        if (b.dataset.tip) return showTip(ev, `<div class="t">${rk.replace('-', ' → ')} · ${wd(d)} ${dm(d)}</div>${esc(b.dataset.tip)}`);
+        const top = x0.fl.slice(0, 3);
+        showTip(ev, `<div class="t">${rk.replace('-', ' → ')} · ${WD_FULL[parseIso(d).getDay()]} ${dm(d)}</div>` + top.map(f =>
+          `<div class="r"><span>${chip(f.airline, f.airlineName)} ${esc(f.no)} ${hhmm(f.dep)}</span><b class="num">${money(f.price)}</b></div>`).join('')
+          + `<div class="muted" style="margin-top:4px">${x0.fl.length} chuyến${s.hi > s.lo ? ` · đắt hơn ngày rẻ nhất ${short(x0.min - s.lo)}` : ''}</div>`);
+      };
+      b.onmouseleave = hideTip;
+    });
+  }
+
+  // ───── explorer ─────
+  function drawExplorer(D) {
+    let rows = [];
+    for (const s of D.stats) {
+      if (ui.route !== 'all' && ui.route !== s.r.key) continue;
+      for (const x of s.days) {
+        if (ui.date !== 'all' && ui.date !== x.d) continue;
+        for (const f of x.fl) rows.push({ ...f, rk: s.r.key, d: x.d, isMin: f === x.best, isWeekMin: s.best && f === s.best.best });
+      }
+    }
+    const airlines = [...new Set(rows.map(f => f.airline))].sort((a, b) => (AIRLINE_ORDER.indexOf(a) + 1 || 99) - (AIRLINE_ORDER.indexOf(b) + 1 || 99));
+    rows = rows.filter(f => !ui.airlinesOff.has(f.airline) && (ui.bucket === 'all' || bucketOf(f) === ui.bucket));
+    const sorters = {
+      price: (a, b) => a.price - b.price,
+      dep: (a, b) => (a.d + a.dep).localeCompare(b.d + b.dep),
+      dur: (a, b) => a.dur - b.dur || a.price - b.price,
+    };
+    rows.sort(sorters[ui.sort] || sorters.price);
+
+    const seg = (key, opts) => `<div class="seg" data-seg="${key}">${opts.map(([v, l]) => `<button data-v="${v}" class="${ui[key] === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+    const el = $('#explorer');
+    el.innerHTML = `<div class="filters">
+        <select id="fRoute"><option value="all">Tất cả chặng</option>${D.routes.map(r => `<option value="${r.key}" ${ui.route === r.key ? 'selected' : ''}>${r.from} → ${r.to}</option>`).join('')}</select>
+        <select id="fDate"><option value="all">Cả ${snap.dates.length} ngày</option>${snap.dates.map(d => `<option value="${d}" ${ui.date === d ? 'selected' : ''}>${WD_FULL[parseIso(d).getDay()]}, ${dm(d)}</option>`).join('')}</select>
+        <span class="sep"></span>
+        ${seg('bucket', [['all', 'Cả ngày'], ['sang', 'Sáng'], ['chieu', 'Chiều'], ['toi', 'Tối']])}
+        <label class="seg" style="padding:0 10px;height:32px;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="fDirect" ${ui.direct ? 'checked' : ''}> Bay thẳng</label>
+        <span class="sep"></span>
+        <span class="chips" id="fAir">${airlines.map(a => `<button class="${ui.airlinesOff.has(a) ? 'off' : ''}" data-a="${esc(a)}" aria-pressed="${!ui.airlinesOff.has(a)}">${chip(a)}</button>`).join('')}</span>
+        <span class="grow"></span>
+        <span class="muted num">${rows.length.toLocaleString('vi-VN')} chuyến</span>
+      </div>
+      ${rows.length ? `<div class="tbl"><table class="fl">
+        <thead><tr>
+          <th>Chặng</th><th data-sort="dep" class="${ui.sort === 'dep' ? 'on' : ''}">Ngày / giờ ${ui.sort === 'dep' ? '↑' : ''}</th><th>Hãng</th><th>Chuyến</th>
+          <th data-sort="dur" class="${ui.sort === 'dur' ? 'on' : ''}">Thời gian ${ui.sort === 'dur' ? '↑' : ''}</th><th>Hạng vé</th>
+          <th data-sort="price" class="r ${ui.sort === 'price' ? 'on' : ''}">Giá ${ui.sort === 'price' ? '↑' : ''}</th></tr></thead>
+        <tbody>${rows.slice(0, ui.limit).map(f => `<tr>
+          <td><b>${f.rk.replace('-', ' → ')}</b></td>
+          <td class="num">${wd(f.d)} ${dm(f.d)} · <b>${hhmm(f.dep)}</b> → ${hhmm(f.arr)}</td>
+          <td>${chip(f.airline, f.airlineName)} <span class="muted">${esc(f.airlineName || AIRLINE_NAME[f.airline] || '')}</span></td>
+          <td class="num">${esc(f.no)}</td>
+          <td class="num">${dur(f.dur)} <span class="muted">${f.stops ? `· ${f.stops} điểm dừng` : '· thẳng'}</span></td>
+          <td class="muted">${esc(f.fare === f.cls ? f.fare : `${f.fare || ''} ${f.cls || ''}`.trim())}</td>
+          <td class="r p num">${f.oldPrice ? `<del>${money(f.oldPrice)}</del>` : ''}${money(f.price)}${f.isWeekMin ? '<span class="badge">rẻ nhất tuần</span>' : f.isMin && ui.date === 'all' ? '<span class="badge">rẻ nhất ngày</span>' : ''}</td>
+        </tr>`).join('')}</tbody></table></div>
+        ${rows.length > ui.limit ? `<button class="more" id="more">Xem thêm ${Math.min(50, rows.length - ui.limit)} chuyến</button>` : ''}`
+      : `<div class="muted" style="padding:40px;text-align:center">Không có chuyến phù hợp bộ lọc</div>`}`;
+
+    $('#fRoute').onchange = e => { ui.route = e.target.value; ui.selected = null; ui.limit = 50; render(); };
+    $('#fDate').onchange = e => { ui.date = e.target.value; ui.selected = null; ui.limit = 50; render(); };
+    $('#fDirect').onchange = e => { ui.direct = e.target.checked; saveUi(); render(); };
+    el.querySelectorAll('[data-seg] button').forEach(b => b.onclick = () => { ui[b.parentElement.dataset.seg] = b.dataset.v; saveUi(); render(); });
+    el.querySelectorAll('#fAir button').forEach(b => b.onclick = () => { const a = b.dataset.a; ui.airlinesOff.has(a) ? ui.airlinesOff.delete(a) : ui.airlinesOff.add(a); render(); });
+    el.querySelectorAll('th[data-sort]').forEach(th => th.onclick = () => { ui.sort = th.dataset.sort; saveUi(); render(); });
+    const more = $('#more');
+    if (more) more.onclick = () => { ui.limit += 50; render(); };
+  }
+
+  let rz;
+  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => snap && render(), 150); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render());
+})();
+</script>
+</body>
+</html>

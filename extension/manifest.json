@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Săn Vé Rẻ",
+  "version": "2.0.0",
+  "description": "Quét giá mọi hãng trên airbookingonline.com, tìm chuyến bay rẻ nhất từng chặng trong tuần.",
+  "action": { "default_title": "Mở Săn Vé Rẻ" },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["scripting", "tabs", "storage", "unlimitedStorage"],
+  "host_permissions": ["https://airbookingonline.com/*"],
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
+}
