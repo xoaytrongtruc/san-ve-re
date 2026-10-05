@@ -48,5 +48,6 @@ Giá = `SumPrice + SumTaxSales`, đúng con số trang hiển thị (đã gồm 
 | Đường dẫn | Nội dung |
 |---|---|
 | `extension/` | Chrome Extension (MV3): dashboard + hàm quét tiêm vào tab airbookingonline |
+| `render.yaml` | Blueprint deploy bản web lên Render (static site, Free) |
 | `docs/` | Bản web cho GitHub Pages, build bằng `node scripts/build-web.js` (chỉ xem, dữ liệu mẫu hoặc file JSON) |
 | `legacy/` | Bản cũ: userscript + server Node, không còn dùng |

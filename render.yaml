@@ -1,0 +1,19 @@
+# Render Blueprint — bản web của Săn Vé Rẻ (static site, gói Free)
+services:
+  - type: web
+    name: san-ve-re
+    runtime: static
+    # docs/ đã có sẵn trong repo; build lại từ extension/ nếu môi trường có Node
+    buildCommand: node scripts/build-web.js || echo "Dung docs/ co san"
+    staticPublishPath: ./docs
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /demo.json
+        name: Cache-Control
+        value: public, max-age=300
